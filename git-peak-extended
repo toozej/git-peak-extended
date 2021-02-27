@@ -1,0 +1,211 @@
+#!/usr/bin/env bash
+
+# help/usage information
+function usage {
+    echo "Usage: git-peak-extended [--temp | --temporary | -t] [--save | -s | --permanent | -p] [--dir | -d] [--debug] [--help | -h] GIT_REPO_URL"
+    echo ""
+    echo "  --temp | --temporary | -t          Run git-peak-extended in default temporary mode."
+    echo ""
+    echo "  --save | -s | --permanent | -p     Run git-peak-extended in permanent save mode."
+    echo ""
+    echo "  --dir | -d                         Set custom directory to store saved git repo."
+    echo ""
+    echo "  --debug                            Run git-peak-extended with verbose debug output."
+    echo ""
+    echo "  -h | --help                        Display usage."
+    echo ""
+    echo "  GIT_REPO_URL                       Git repo URL to download."
+    echo ""
+}
+
+function set_defaults() {
+    MODE=temp
+    DIR=$(mktemp -d)
+    GIT_OPTS="--depth 1"
+    EXIT_ACTION="rm -rf ${DIR}"
+    DEBUG=false
+}
+
+function extract_from_git_repo_url() {
+    # re based on https://serverfault.com/a/917253 removing the final .git portion,
+    # since if we've gotten to this point in execution we've already handled the case where GIT_REPO_URL is a valid GIT_CLONE_URL ending in .git
+    re="^(https|git)(:\/\/|@)([^\/:]+)[\/:]([^\/:]+)\/(.+)$"
+
+    if [[ ${GIT_REPO_URL} =~ ^https.*|^git@.* ]] && [[ ${GIT_REPO_URL} =~ github.com|gitlab.com|bitbucket.org|git.sr.ht ]]; then
+        # GIT_REPO_URL is a supported git URL but without .git
+        if [[ ${GIT_REPO_URL} =~ ${re} ]]; then    
+            git_provider=${BASH_REMATCH[3]}
+            username=${BASH_REMATCH[4]}
+            repo=${BASH_REMATCH[5]}
+        fi
+    elif [[ ${GIT_REPO_URL} =~ ^.*/.*$ ]] && [[ ${GIT_REPO_URL} != *"."* ]]; then
+        # GIT_REPO_URL is $username/$repo format
+        git_provider="unknown"
+        username=$(echo "${GIT_REPO_URL}" | cut -d '/' -f1)
+        repo=$(echo "${GIT_REPO_URL}" | cut -d '/' -f2)
+    else
+        echo "unsupported GIT_REPO_URL"
+        git_provider="unknown"
+        username="unknown"
+        repo="unknown"
+        exit 4
+    fi
+}
+
+function verify_git_repo_exists() {
+    if [[ ${git_provider} == "unknown" ]]; then
+        for i in github.com gitlab.com git.sr.ht bitbucket.org unknown; do
+            git_provider=${i}
+            case ${git_provider} in
+                # github.com API returns "Not Found" if repo not found, otherwise message field will be blank for found repos
+                github.com ) curl -s https://api.github.com/repos/${username}/${repo} | jq -r '.message' | grep -q -v -i "not found" && return ;;
+                
+                # gitlab.com API users vs projects makes it hard to search easily
+                # so instead, see if there's "redirected" on the repo page
+                # if there isn't, then the repo page is valid
+                gitlab.com ) curl -s https://gitlab.com/${username}/${repo}/ | grep -q -v "redirected" && return ;;
+                
+                # SourceHut's Git API doesn't allow unauthenticated querying :(
+                # so instead, see if there's a "git clone" link on the repo page
+                git.sr.ht ) curl -s https://git.sr.ht/~${username}/${repo}/ | grep -q "git clone" && return;;
+
+                # bitbucket.org API error field contains "repository" if repo is found, otherwise it contains "error"
+                bitbucket.org ) curl -s https://api.bitbucket.org/2.0/repositories/${username}/${repo} | jq -r '.type' | grep -q "repository" && return ;;
+                
+                # if git repo wasn't found in above git providers, print error message and exit
+                unknown ) echo "After trying all supported git providers, can't find ${username}/${repo}. Exiting" && exit 5
+            esac
+        done
+    fi
+}
+
+function set_up_git_clone_url() {
+    GIT_CLONE_URL=`case ${git_provider} in
+        github.com | gitlab.com | bitbucket.org ) echo -n "git@${git_provider}:${username}/${repo}.git" ;;
+        git.sr.ht ) echo -n "git@${git_provider}:~${username}/${repo}" ;;
+    esac`
+}
+
+function check_git_repo_url() {
+    if [[ ${GIT_REPO_URL} =~ ^https.*|^git@.* ]] && [[ ${GIT_REPO_URL} =~ .*.git$ ]]; then
+        GIT_CLONE_URL=${GIT_REPO_URL}
+    else
+        verify_git_repo_exists
+        set_up_git_clone_url
+    fi
+}
+
+function set_up_dir() {
+    if [[ ${CUSTOM_DIR} != "true" && ${MODE} == "save" ]]; then
+        # now that we've filled in the necessary variables in extract_from_git_repo_url(), re-write $DIR variable and $EXIT_ACTION variable which uses them
+        DIR="${HOME}/src/${git_provider%.*}/${username}/${repo}"
+        EXIT_ACTION="echo -e \nrepo permanently saved at ${DIR}"
+    fi
+    
+    if [ -d ${DIR} ]; then
+        if git -C ${DIR} rev-parse > /dev/null 2>&1; then
+            # ${DIR} is a git repo
+            current_branch=`git rev-parse --abbrev-ref HEAD`
+            default_branch=`git remote show origin | grep "HEAD branch" | sed 's/.*: //'`
+            if [ ${current_branch} == ${default_branch} ]; then
+                # if on default branch already: git pull
+                git pull
+                echo "Directory ${DIR} already exists as a git repo."
+                echo "Default branch ${default_branch} is currently checked out. So just ran \`git pull\`. Exiting."
+                exit 6
+            else
+                # if not on default branch already: print message and exit
+                echo "Directory ${DIR} already exists as a git repo."
+                echo "Currently checked out branch ${current_branch} is not the default branch ${default_branch}. Exiting."
+                exit 7
+            fi
+        fi
+    else
+        mkdir -p ${DIR}
+    fi
+}
+
+# set defaults before getting user input
+set_defaults
+
+# get user input
+while :; do
+  case $1 in
+    -h | --help)
+      usage
+      exit 1
+      ;;
+    -t | --temp | --temporary)
+      ;;
+    -s | --save)
+      MODE=save
+      DIR="${HOME}/src/${git_provider%.*}/${username}/${repo}"
+      GIT_OPTS="--recurse-submodules -j8"
+      EXIT_ACTION="echo -e \nrepo permanently saved at ${DIR}"
+      ;;
+    -p | --permanent)
+      MODE=save
+      DIR="~/src/${git_provider}/${username}/${repo}"
+      GIT_OPTS="--recurse-submodules -j8"
+      EXIT_ACTION="echo -e \nrepo permanently saved at ${DIR}"
+      ;;
+    -d | --dir | --directory)
+      CUSTOM_DIR=true
+      DIR=$2
+      shift
+      ;;
+    --debug)
+      DEBUG=true
+      ;;
+    ?)
+      usage
+      exit 1
+      ;;
+    *) break
+  esac
+  shift
+done
+
+if [[ ${DEBUG} == true ]]; then
+    set -x
+fi
+
+# test user input, ensuring required parameters are set
+## EDITOR
+if [ -z ${EDITOR+x} ]; then 
+    echo "EDITOR is unset";
+    exit 2
+fi
+## $1 should be git_url, if not, usage()
+if [ -z ${1+x} ]; then 
+    echo "${1} is unset";
+    usage
+    exit 3
+else
+    GIT_REPO_URL=${1}
+fi
+
+# extract ${git_provider}, ${username}, ${repo} from user inputted GIT_REPO_URL
+extract_from_git_repo_url
+
+# check if inputted ${GIT_REPO_URL} is already of proper ${GIT_CLONE_URL} format
+# if not, call verify_git_repo_exists and set_up_git_clone_url
+check_git_repo_url
+
+# set up ${DIR}
+set_up_dir
+
+# clone the repo to ${DIR}
+git clone ${GIT_OPTS} ${GIT_CLONE_URL} ${DIR}
+
+# finally, run what we came here to do: view/edit a repo
+${EDITOR} ${DIR}
+
+# and we're done! So run ${EXIT_ACTION} and quit
+${EXIT_ACTION}
+if [ $? -eq 0 ]; then
+    exit 0
+else
+    echo "EXIT_ACTION ${EXIT_ACTION} failed, you will likely have to clean up after yourself."
+    exit 8
+fi
