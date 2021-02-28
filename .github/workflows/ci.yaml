@@ -1,0 +1,52 @@
+---
+name: CI
+'on':
+  pull_request:
+  push:
+    branches:
+      - master
+      - testing
+  schedule:
+    - cron: "0 1 * * 1"
+
+jobs:
+
+  check:
+    name: Check
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check out the codebase.
+        uses: actions/checkout@v2
+
+      - name: Install check dependencies.
+        run: sudo apt-get install -y shellcheck
+
+      - name: Check code syntax.
+        run: |
+          bash -n git-peak-extended
+          shellcheck git-peak-extended
+
+  test:
+    name: Test
+    #needs: check
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        container:
+          - 'centos_8'
+          - 'debian_stable'
+          - 'debian_testing'
+          - 'fedora_latest'
+          - 'fedora_rawhide'
+          - 'ubuntu_2004'
+      fail-fast: false
+
+    steps:
+      - name: Check out the codebase.
+        uses: actions/checkout@v2
+
+      - name: Build Docker images
+        run: docker build -t ${{ matrix.container }} -f tests/dockerfiles/Dockerfile_${{ matrix.container }} .
+
+      - name: Run tests in containers.
+        run: docker run --rm -v $(pwd):/git-peak-extended ${{ matrix.container }} sh -c "bash /git-peak-extended/tests/run_tests.sh"

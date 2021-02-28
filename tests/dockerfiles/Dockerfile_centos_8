@@ -1,0 +1,5 @@
+FROM centos:8
+
+# update dnf and install pre-reqs
+# note not installing coreutils as coreutils-simple is part of base Centos:8 image
+RUN dnf upgrade -y && dnf install -y bash curl git jq
