@@ -28,29 +28,47 @@ With so many similar repos as noted [above in the inspirations section](#inspira
 1. I often find myself wanting to be able to quickly store git repos from a terminal without having to faff around copy/pasting `git clone`-style links.
 2. I wanted to be able to view repos using one $EDITOR [VSCode][vscode] while storing repos permanently and opening them with another $EDITOR [vim][vim].
     - I find the GUI-centric nature of [VSCode][vscode] easier for quick perusing and determining what a repo is and does than my main editing-focused usage of [vim][vim]
-2. More practice writing Bash scripts
-3. More specifically testing Bash scripts with GitHub Actions
+3. More practice writing Bash scripts
+4. More specifically testing Bash scripts with GitHub Actions
 
 ## Usage
-1. Download git-peak-extended:
+1. Install pre-requisites
+    - bash
+    - git
+    - jq
+    - curl
+    - coreutils (for the mktemp binary)
+    - If you're using an apt-based distribution, you can typically install these with:
+        ```bash
+        sudo apt-get install -y bash git jq curl coreutils
+        ```
+    - If you're using a dnf-based distribution, you can typically install these with:
+        ```bash
+        sudo dnf install -y bash git jq curl coreutils
+        ```
+    - If you're using MacOS, you can typically install these with homebrew:
+        ```
+        brew install bash git jq curl
+        ```
+2. Download git-peak-extended:
     - Using cURL: `curl -sLo ./git-peak-extended https://raw.githubusercontent.com/toozej/git-peak-extended/main/git-peak-extended && chmod u+x ./git-peak-extended` 
     - Using Wget: `wget -q -O ./git-peak-extended https://raw.githubusercontent.com/toozej/git-peak-extended/main/git-peak-extended && chmod u+x ./git-peak-extended` 
     - Using git: `git clone git@github.com:toozej/git-peak-extended.git`
     - Using git-peak-extended (meta!): `git-peak-extended toozej/git-peak-extended`
 
-2. Find a repo to you want to "peek", and get the `GIT_REPO_URL` in any one of these supported formats:
+3. Find a repo to you want to "peek", and get the `GIT_REPO_URL` in any one of these supported formats:
     - `https://$git_provider/$username/$repo.git`
     - `git@$git_provider:$username/$repo.git`
     - `$username/$repo`
         - git-peak-extended will first search [GitHub][github], then [GitLab][gitlab], then [soucehut][sourcehut] and finally [BitBucket][bitbucket]. If repo not found, git-peak-extended will print an error message and exit 
 
-3. Temporarily clone and view a git repo: `./git-peak-extended GIT_REPO_URL`
+4. Temporarily clone and view a git repo: `./git-peak-extended GIT_REPO_URL`
     - For more explicit usage (like in aliases), you can alternatively use `./git-peak-extended --temp GIT_REPO_URL` or the `-t` flag to mean the same thing
 
-4. Permanently clone and view a git repo: `./git-peak-extended --save GIT_REPO_URL`
+5. Permanently clone and view a git repo: `./git-peak-extended --save GIT_REPO_URL`
     - Alternatively, the `-s` short-hand flag, `--permanent` or `-p` short-hand flags do the same thing
 
-5. Optional arguments affecting both "temporary" and "permanent" modes are as follows:
+6. Optional arguments affecting both "temporary" and "permanent" modes are as follows:
     - `./git-peak-extended <arguments> GIT_REPO_URL`
     - If you want to specify a non-default directory to store, you can use `--dir </path/to/dir>`
     - If you want to change the default editor used to open the git repo using either of these methods:

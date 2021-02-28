@@ -173,12 +173,12 @@ fi
 # test user input, ensuring required parameters are set
 ## EDITOR
 if [ -z ${EDITOR+x} ]; then 
-    echo "EDITOR is unset";
+    echo "EDITOR is unset"
     exit 2
 fi
 ## $1 should be git_url, if not, usage()
 if [ -z ${1+x} ]; then 
-    echo "${1} is unset";
+    echo "GIT_REPO_URL is unset"
     usage
     exit 3
 else
