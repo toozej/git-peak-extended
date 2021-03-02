@@ -94,7 +94,7 @@ curl -sLo ~/bin/git-peak-extended https://raw.githubusercontent.com/toozej/git-p
 
 2. Alias `gp` to git-peak-extended's default mode (temporarily grab repo)
 ```bash
-echo 'alias gp="EDITOR=vscode $HOME/bin/git-peak-extended --temp"' >> ~/.aliases 
+echo 'alias gp="EDITOR='code -n -w -a' $HOME/bin/git-peak-extended --temp"' >> ~/.aliases 
 ```
 
 3. Alias `gps` to git-peak-extended's save permanently mode
