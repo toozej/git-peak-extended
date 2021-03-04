@@ -24,6 +24,7 @@ function set_defaults() {
     GIT_OPTS="--depth 1"
     EXIT_ACTION="rm -rf ${DIR}"
     DEBUG=false
+    SKIP_GIT_CLONE=false
 }
 
 function extract_from_git_repo_url() {
@@ -111,13 +112,13 @@ function set_up_dir() {
                 # if on default branch already: git pull
                 git pull
                 echo "Directory ${DIR} already exists as a git repo."
-                echo "Default branch ${default_branch} is currently checked out. So just ran \`git pull\`. Exiting."
-                exit 6
+                echo "Default branch ${default_branch} is currently checked out. So just ran \`git pull\`."
+                SKIP_GIT_CLONE=true
             else
                 # if not on default branch already: print message and exit
                 echo "Directory ${DIR} already exists as a git repo."
-                echo "Currently checked out branch ${current_branch} is not the default branch ${default_branch}. Exiting."
-                exit 7
+                echo "Currently checked out branch ${current_branch} is not the default branch ${default_branch}."
+                SKIP_GIT_CLONE=true
             fi
         fi
     else
@@ -195,8 +196,10 @@ check_git_repo_url
 # set up ${DIR}
 set_up_dir
 
-# clone the repo to ${DIR}
-git clone ${GIT_OPTS} ${GIT_CLONE_URL} ${DIR}
+if [[ ${SKIP_GIT_CLONE} == true ]]; then
+    # clone the repo to ${DIR}
+    git clone ${GIT_OPTS} ${GIT_CLONE_URL} ${DIR}
+fi
 
 # finally, run what we came here to do: view/edit a repo
 ${EDITOR} ${DIR}
@@ -207,5 +210,5 @@ if [ $? -eq 0 ]; then
     exit 0
 else
     echo "EXIT_ACTION ${EXIT_ACTION} failed, you will likely have to clean up after yourself."
-    exit 8
+    exit 6
 fi
