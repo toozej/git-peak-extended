@@ -196,7 +196,7 @@ check_git_repo_url
 # set up ${DIR}
 set_up_dir
 
-if [[ ${SKIP_GIT_CLONE} == true ]]; then
+if [[ ${SKIP_GIT_CLONE} == false ]]; then
     # clone the repo to ${DIR}
     git clone ${GIT_OPTS} ${GIT_CLONE_URL} ${DIR}
 fi
