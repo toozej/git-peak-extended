@@ -1,0 +1,4 @@
+FROM debian:stable
+
+# update apt and install pre-reqs
+RUN apt-get update -qq && apt-get upgrade -y && apt-get install -y bash coreutils curl git jq

@@ -1,0 +1,4 @@
+FROM fedora:latest
+
+# update dnf and install pre-reqs 
+RUN dnf upgrade -y && dnf install -y bash coreutils curl git jq

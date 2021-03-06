@@ -32,14 +32,14 @@ function extract_from_git_repo_url() {
     # since if we've gotten to this point in execution we've already handled the case where GIT_REPO_URL is a valid GIT_CLONE_URL ending in .git
     re="^(https|git)(:\/\/|@)([^\/:]+)[\/:]([^\/:]+)\/(.+)$"
 
-    if [[ ${GIT_REPO_URL} =~ ^https.*|^git@.* ]] && [[ ${GIT_REPO_URL} =~ github.com|gitlab.com|bitbucket.org|git.sr.ht ]]; then
+    if [[ "${GIT_REPO_URL}" =~ ^https.*|^git@.* ]] && [[ "${GIT_REPO_URL}" =~ github.com|gitlab.com|bitbucket.org|git.sr.ht ]]; then
         # GIT_REPO_URL is a supported git URL but without .git
-        if [[ ${GIT_REPO_URL} =~ ${re} ]]; then    
+        if [[ "${GIT_REPO_URL}" =~ ${re} ]]; then
             git_provider=${BASH_REMATCH[3]}
             username=${BASH_REMATCH[4]}
             repo=${BASH_REMATCH[5]}
         fi
-    elif [[ ${GIT_REPO_URL} =~ ^.*/.*$ ]] && [[ ${GIT_REPO_URL} != *"."* ]]; then
+    elif [[ "${GIT_REPO_URL}" =~ ^.*/.*$ ]] && [[ "${GIT_REPO_URL}" != *"."* ]]; then
         # GIT_REPO_URL is $username/$repo format
         git_provider="unknown"
         username=$(echo "${GIT_REPO_URL}" | cut -d '/' -f1)
@@ -54,24 +54,24 @@ function extract_from_git_repo_url() {
 }
 
 function verify_git_repo_exists() {
-    if [[ ${git_provider} == "unknown" ]]; then
+    if [[ "${git_provider}" == "unknown" ]]; then
         for i in github.com gitlab.com git.sr.ht bitbucket.org unknown; do
             git_provider=${i}
-            case ${git_provider} in
+            case "${git_provider}" in
                 # github.com API returns "Not Found" if repo not found, otherwise message field will be blank for found repos
-                github.com ) curl -s https://api.github.com/repos/${username}/${repo} | jq -r '.message' | grep -q -v -i "not found" && return ;;
+                github.com ) curl -s "https://api.github.com/repos/${username}/${repo}" | jq -r '.message' | grep -q -v -i "not found" && return ;;
                 
                 # gitlab.com API users vs projects makes it hard to search easily
                 # so instead, see if there's "redirected" on the repo page
                 # if there isn't, then the repo page is valid
-                gitlab.com ) curl -s https://gitlab.com/${username}/${repo}/ | grep -q -v "redirected" && return ;;
+                gitlab.com ) curl -s "https://gitlab.com/${username}/${repo}/" | grep -q -v "redirected" && return ;;
                 
                 # SourceHut's Git API doesn't allow unauthenticated querying :(
                 # so instead, see if there's a "git clone" link on the repo page
-                git.sr.ht ) curl -s https://git.sr.ht/~${username}/${repo}/ | grep -q "git clone" && return;;
+                git.sr.ht ) curl -s "https://git.sr.ht/~${username}/${repo}/" | grep -q "git clone" && return;;
 
                 # bitbucket.org API error field contains "repository" if repo is found, otherwise it contains "error"
-                bitbucket.org ) curl -s https://api.bitbucket.org/2.0/repositories/${username}/${repo} | jq -r '.type' | grep -q "repository" && return ;;
+                bitbucket.org ) curl -s "https://api.bitbucket.org/2.0/repositories/${username}/${repo}" | jq -r '.type' | grep -q "repository" && return ;;
                 
                 # if git repo wasn't found in above git providers, print error message and exit
                 unknown ) echo "After trying all supported git providers, can't find ${username}/${repo}. Exiting" && exit 5
@@ -81,14 +81,14 @@ function verify_git_repo_exists() {
 }
 
 function set_up_git_clone_url() {
-    GIT_CLONE_URL=`case ${git_provider} in
+    GIT_CLONE_URL=$(case "${git_provider}" in
         github.com | gitlab.com | bitbucket.org ) echo -n "git@${git_provider}:${username}/${repo}.git" ;;
         git.sr.ht ) echo -n "git@${git_provider}:~${username}/${repo}" ;;
-    esac`
+    esac)
 }
 
 function check_git_repo_url() {
-    if [[ ${GIT_REPO_URL} =~ ^https.*|^git@.* ]] && [[ ${GIT_REPO_URL} =~ .*.git$ ]]; then
+    if [[ "${GIT_REPO_URL}" =~ ^https.*|^git@.* ]] && [[ "${GIT_REPO_URL}" =~ .*.git$ ]]; then
         GIT_CLONE_URL=${GIT_REPO_URL}
     else
         verify_git_repo_exists
@@ -97,18 +97,18 @@ function check_git_repo_url() {
 }
 
 function set_up_dir() {
-    if [[ ${CUSTOM_DIR} != "true" && ${MODE} == "save" ]]; then
+    if [[ "${CUSTOM_DIR}" != "true" && "${MODE}" == "save" ]]; then
         # now that we've filled in the necessary variables in extract_from_git_repo_url(), re-write $DIR variable and $EXIT_ACTION variable which uses them
         DIR="${HOME}/src/${git_provider%.*}/${username}/${repo}"
         EXIT_ACTION="echo -e \nrepo permanently saved at ${DIR}"
     fi
     
-    if [ -d ${DIR} ]; then
-        if git -C ${DIR} rev-parse > /dev/null 2>&1; then
+    if [ -d "${DIR}" ]; then
+        if git -C "${DIR}" rev-parse > /dev/null 2>&1; then
             # ${DIR} is a git repo
-            current_branch=`git rev-parse --abbrev-ref HEAD`
-            default_branch=`git remote show origin | grep "HEAD branch" | sed 's/.*: //'`
-            if [ ${current_branch} == ${default_branch} ]; then
+            current_branch=$(git rev-parse --abbrev-ref HEAD)
+            default_branch=$(git remote show origin | grep "HEAD branch" | sed 's/.*: //')
+            if [ "${current_branch}" == "${default_branch}" ]; then
                 # if on default branch already: git pull
                 git pull
                 echo "Directory ${DIR} already exists as a git repo."
@@ -122,7 +122,7 @@ function set_up_dir() {
             fi
         fi
     else
-        mkdir -p ${DIR}
+        mkdir -p "${DIR}"
     fi
 }
 
@@ -146,7 +146,7 @@ while :; do
       ;;
     -p | --permanent)
       MODE=save
-      DIR="~/src/${git_provider}/${username}/${repo}"
+      DIR="${HOME}/src/${git_provider}/${username}/${repo}"
       GIT_OPTS="--recurse-submodules -j8"
       EXIT_ACTION="echo -e \nrepo permanently saved at ${DIR}"
       ;;
@@ -167,18 +167,18 @@ while :; do
   shift
 done
 
-if [[ ${DEBUG} == true ]]; then
+if [[ "${DEBUG}" == true ]]; then
     set -x
 fi
 
 # test user input, ensuring required parameters are set
 ## EDITOR
-if [ -z ${EDITOR+x} ]; then 
+if [ -z "${EDITOR+x}" ]; then
     echo "EDITOR is unset"
     exit 2
 fi
 ## $1 should be git_url, if not, usage()
-if [ -z ${1+x} ]; then 
+if [ -z "${1+x}" ]; then
     echo "GIT_REPO_URL is unset"
     usage
     exit 3
@@ -196,17 +196,19 @@ check_git_repo_url
 # set up ${DIR}
 set_up_dir
 
-if [[ ${SKIP_GIT_CLONE} == false ]]; then
+if [[ "${SKIP_GIT_CLONE}" == false ]]; then
     # clone the repo to ${DIR}
-    git clone ${GIT_OPTS} ${GIT_CLONE_URL} ${DIR}
+
+    # "${GIT_OPTS}" causes options to be added to git command with quotes which is invalid
+    # shellcheck disable=SC2086
+    git clone ${GIT_OPTS} "${GIT_CLONE_URL}" "${DIR}"
 fi
 
 # finally, run what we came here to do: view/edit a repo
-${EDITOR} ${DIR}
+"${EDITOR}" "${DIR}"
 
 # and we're done! So run ${EXIT_ACTION} and quit
-${EXIT_ACTION}
-if [ $? -eq 0 ]; then
+if ${EXIT_ACTION}; then
     exit 0
 else
     echo "EXIT_ACTION ${EXIT_ACTION} failed, you will likely have to clean up after yourself."
