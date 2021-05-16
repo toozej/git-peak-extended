@@ -205,7 +205,7 @@ if [[ "${SKIP_GIT_CLONE}" == false ]]; then
 fi
 
 # finally, run what we came here to do: view/edit a repo
-"${EDITOR}" "${DIR}"
+${EDITOR} "${DIR}"
 
 # and we're done! So run ${EXIT_ACTION} and quit
 if ${EXIT_ACTION}; then
