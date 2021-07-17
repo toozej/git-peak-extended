@@ -2,7 +2,7 @@
 
 # help/usage information
 function usage {
-    echo "Usage: git-peak-extended [--temp | --temporary | -t] [--save | -s | --permanent | -p] [--dir | -d] [--debug] [--help | -h] GIT_REPO_URL"
+    echo "Usage: git-peak-extended [--temp | --temporary | -t] [--save | -s | --permanent | -p] [--dir | -d] [--branch | -b] [--debug] [--help | -h] GIT_REPO_URL <GIT_REPO_BRANCH>"
     echo ""
     echo "  --temp | --temporary | -t          Run git-peak-extended in default temporary mode."
     echo ""
@@ -10,11 +10,15 @@ function usage {
     echo ""
     echo "  --dir | -d                         Set custom directory to store saved git repo."
     echo ""
+    echo "  --branch | -b                      Non-default branch to checkout."
+    echo ""
     echo "  --debug                            Run git-peak-extended with verbose debug output."
     echo ""
     echo "  -h | --help                        Display usage."
     echo ""
     echo "  GIT_REPO_URL                       Git repo URL to download."
+    echo ""
+    echo "  GIT_REPO_BRANCH                    Non-default branch to checkout."
     echo ""
 }
 
@@ -106,11 +110,18 @@ function set_up_dir() {
     if [ -d "${DIR}" ]; then
         if git -C "${DIR}" rev-parse > /dev/null 2>&1; then
             # ${DIR} is a git repo
-            current_branch=$(git rev-parse --abbrev-ref HEAD)
-            default_branch=$(git remote show origin | grep "HEAD branch" | sed 's/.*: //')
+            current_branch=$(git -C "${DIR}" rev-parse --abbrev-ref HEAD)
+
+            # use user-requested branch as default branch if inputted, otherwise get repo's default branch
+            if [[ -n "${GIT_REPO_BRANCH}" ]]; then
+                default_branch=${GIT_REPO_BRANCH}
+            else
+                default_branch=$(git -C "${DIR}" remote show origin | grep "HEAD branch" | sed 's/.*: //')
+            fi
+
             if [ "${current_branch}" == "${default_branch}" ]; then
                 # if on default branch already: git pull
-                git pull
+                git -C "${DIR}" pull
                 echo "Directory ${DIR} already exists as a git repo."
                 echo "Default branch ${default_branch} is currently checked out. So just ran \`git pull\`."
                 SKIP_GIT_CLONE=true
@@ -118,6 +129,7 @@ function set_up_dir() {
                 # if not on default branch already: print message and exit
                 echo "Directory ${DIR} already exists as a git repo."
                 echo "Currently checked out branch ${current_branch} is not the default branch ${default_branch}."
+                echo "Cowardly not checking out ${default_branch}."
                 SKIP_GIT_CLONE=true
             fi
         fi
@@ -155,6 +167,11 @@ while :; do
       DIR=$2
       shift
       ;;
+    -b | --branch)
+      GIT_REPO_BRANCH=$2
+      GIT_OPTS="${GIT_OPTS} --branch ${GIT_REPO_BRANCH}"
+      shift
+      ;;
     --debug)
       DEBUG=true
       ;;
@@ -184,6 +201,12 @@ if [ -z "${1+x}" ]; then
     exit 3
 else
     GIT_REPO_URL=${1}
+fi
+
+# optional positional argument GIT_REPO_BRANCH should be after GIT_REPO_URL, so $2
+if [ -n "${2}" ]; then
+    GIT_REPO_BRANCH=${2}
+    GIT_OPTS="${GIT_OPTS} --branch ${GIT_REPO_BRANCH}"
 fi
 
 # extract ${git_provider}, ${username}, ${repo} from user inputted GIT_REPO_URL

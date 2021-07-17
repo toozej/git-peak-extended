@@ -6,6 +6,7 @@ git-peak-extended uses the same basic idea as [git-peak][git-peak] but takes it 
 1. Supports saving git repos either to temporary storage (like [git-peak][git-peek]), but alternatively, to permanent storage for future use.
 2. Supports the three most common public git providers: [GitHub][github], [GitLab][gitlab], [sourcehut][sourcehut], and [BitBucket][bitbucket].
 3. Supports HTTPS, Git, and short-hand formatted repo URLs to clone
+4. Supports checking out a user-specified branch, or the repo's default branch
 
 Like [git-peak][git-peak], git-peak-extended is written in Bash for portability, ease of use, and extendability. 
 
@@ -74,6 +75,7 @@ With so many similar repos as noted [above in the inspirations section](#inspira
     - If you want to change the default editor used to open the git repo using either of these methods:
         - Temporarily set the editor for this one-time usage of git-peak-extended: `EDITOR=<some_different_editor> ./git-peak-extended <arguments> GIT_REPO_URL`
         - Permanently set the editor by editing your shell's configuration file, adding or adjusting a line like this: `export EDITOR='<some_different_editor>'`
+    - If you want to specify a non-default git branch to checkout, you can use `--branch <branch_name>` or add the optional `GIT_REPO_BRANCH` as a positional argument after `GIT_REPO_URL`
 
 
 ### Assumptions
@@ -100,6 +102,11 @@ echo 'alias gp="EDITOR='code -n -w -a' $HOME/bin/git-peak-extended --temp"' >> ~
 3. Alias `gps` to git-peak-extended's save permanently mode
 ```bash
 echo 'alias gps="EDITOR=vim $HOME/bin/git-peak-extended --save"' >> ~/.aliases 
+```
+
+4. Alias `gpb` to git-peak-extended's default mode (temporarily grab repo) with a specific branch
+```bash
+echo 'alias gpb="EDITOR='code -n -w -a' $HOME/bin/git-peak-extended --temp --branch"' >> ~/.aliases 
 ```
 
 [bitbucket]: https://bitbucket.org/
