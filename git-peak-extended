@@ -39,7 +39,7 @@ function extract_from_git_repo_url() {
             username=${BASH_REMATCH[4]}
             repo=${BASH_REMATCH[5]}
         fi
-    elif [[ "${GIT_REPO_URL}" =~ ^.*/.*$ ]] && [[ "${GIT_REPO_URL}" != *"."* ]]; then
+    elif [[ "${GIT_REPO_URL}" =~ ^.*/.*$ ]]; then
         # GIT_REPO_URL is $username/$repo format
         git_provider="unknown"
         username=$(echo "${GIT_REPO_URL}" | cut -d '/' -f1)
