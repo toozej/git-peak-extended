@@ -36,7 +36,7 @@ function extract_from_git_repo_url() {
     # since if we've gotten to this point in execution we've already handled the case where GIT_REPO_URL is a valid GIT_CLONE_URL ending in .git
     re="^(https|git)(:\/\/|@)([^\/:]+)[\/:]([^\/:]+)\/(.+)$"
 
-    if [[ "${GIT_REPO_URL}" =~ ^https.*|^git@.* ]] && [[ "${GIT_REPO_URL}" =~ github.com|gitlab.com|bitbucket.org|git.sr.ht ]]; then
+    if [[ "${GIT_REPO_URL}" =~ ^https.*|^git@.* ]]; then
         # GIT_REPO_URL is a supported git URL but without .git
         if [[ "${GIT_REPO_URL}" =~ ${re} ]]; then
             git_provider=${BASH_REMATCH[3]}
