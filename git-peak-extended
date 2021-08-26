@@ -2,15 +2,13 @@
 
 # help/usage information
 function usage {
-    echo "Usage: git-peak-extended [--temp | --temporary | -t] [--save | -s | --permanent | -p] [--dir | -d] [--chdir | -c | --change-dir ] [--branch | -b] [--debug] [--help | -h] GIT_REPO_URL <GIT_REPO_BRANCH>"
+    echo "Usage: git-peak-extended [--temp | --temporary | -t] [--save | -s | --permanent | -p] [--dir | -d] [--branch | -b] [--debug] [--help | -h] GIT_REPO_URL <GIT_REPO_BRANCH>"
     echo ""
     echo "  --temp | --temporary | -t          Run git-peak-extended in default temporary mode."
     echo ""
     echo "  --save | -s | --permanent | -p     Run git-peak-extended in permanent save mode."
     echo ""
     echo "  --dir | -d                         Set custom directory to store saved git repo."
-    echo ""
-    echo "  --chdir | -c | --change-dir        'cd' to directory with saved git repo on exit."
     echo ""
     echo "  --branch | -b                      Non-default branch to checkout."
     echo ""
@@ -31,7 +29,6 @@ function set_defaults() {
     EXIT_ACTION="rm -rf ${DIR}"
     DEBUG=false
     SKIP_GIT_CLONE=false
-    CHANGE_DIR_EXIT=false
 }
 
 function extract_from_git_repo_url() {
@@ -170,9 +167,6 @@ while :; do
       DIR=$2
       shift
       ;;
-    -c | --chdir | --change-dir)
-      CHANGE_DIR_EXIT=true
-      ;;
     -b | --branch)
       GIT_REPO_BRANCH=$2
       GIT_OPTS="${GIT_OPTS} --branch ${GIT_REPO_BRANCH}"
@@ -238,12 +232,8 @@ ${EDITOR} "${DIR}"
 
 # and we're done! So run ${EXIT_ACTION} and quit
 if ${EXIT_ACTION}; then
-    if [[ "${CHANGE_DIR_EXIT}" == true ]]; then
-        # 'cd' to saved git repo directory to allow for easier/faster future manipulation of repo
-        cd "${DIR}" || exit 6
-    fi
     exit 0
 else
     echo "EXIT_ACTION ${EXIT_ACTION} failed, you will likely have to clean up after yourself."
-    exit 7
+    exit 6
 fi
