@@ -2,7 +2,7 @@
 
 # help/usage information
 function usage {
-    echo "Usage: git-peak-extended [--temp | --temporary | -t] [--save | -s | --permanent | -p] [--dir | -d] [--branch | -b] [--debug] [--help | -h] GIT_REPO_URL <GIT_REPO_BRANCH>"
+    echo "Usage: git-peak-extended [--temp | --temporary | -t] [--save | -s | --permanent | -p] [--dir | -d] [--chdir | -c | --change-dir ] [--branch | -b] [--debug] [--help | -h] GIT_REPO_URL <GIT_REPO_BRANCH>"
     echo ""
     echo "  --temp | --temporary | -t          Run git-peak-extended in default temporary mode."
     echo ""
@@ -170,9 +170,8 @@ while :; do
       DIR=$2
       shift
       ;;
-    -c | --chdir | --change-directory)
+    -c | --chdir | --change-dir)
       CHANGE_DIR_EXIT=true
-      shift
       ;;
     -b | --branch)
       GIT_REPO_BRANCH=$2
