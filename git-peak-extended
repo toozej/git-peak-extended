@@ -241,10 +241,10 @@ ${EDITOR} "${DIR}"
 if ${EXIT_ACTION}; then
     if [[ "${CHANGE_DIR_EXIT}" == true ]]; then
         # 'cd' to saved git repo directory to allow for easier/faster future manipulation of repo
-        cd "${DIR}"
+        cd "${DIR}" || exit 6
     fi
     exit 0
 else
     echo "EXIT_ACTION ${EXIT_ACTION} failed, you will likely have to clean up after yourself."
-    exit 6
+    exit 7
 fi
