@@ -96,17 +96,17 @@ curl -sLo ~/bin/git-peak-extended https://raw.githubusercontent.com/toozej/git-p
 
 2. Alias `gp` to git-peak-extended's default mode (temporarily grab repo)
 ```bash
-echo 'alias gp="EDITOR='code -n -w -a' $HOME/bin/git-peak-extended --temp"' >> ~/.aliases 
+echo "gp() { EDITOR='code -n -w -a' $HOME/bin/git-peak-extended --temp $@; }" >> ~/.functions
 ```
 
 3. Alias `gps` to git-peak-extended's save permanently mode
 ```bash
-echo 'alias gps="EDITOR=vim $HOME/bin/git-peak-extended --save"' >> ~/.aliases 
+echo "gps() { EDITOR=vim $HOME/bin/git-peak-extended --save $@ && cd $(cat /tmp/git-peak-extended.tmp); }" >> ~/.functions
 ```
 
 4. Alias `gpb` to git-peak-extended's default mode (temporarily grab repo) with a specific branch
 ```bash
-echo 'alias gpb="EDITOR='code -n -w -a' $HOME/bin/git-peak-extended --temp --branch"' >> ~/.aliases 
+echo "gpb() { EDITOR='code -n -w -a' $HOME/bin/git-peak-extended --temp --branch $@; }" >> ~/.functions
 ```
 
 [bitbucket]: https://bitbucket.org/

@@ -104,7 +104,7 @@ function set_up_dir() {
     if [[ "${CUSTOM_DIR}" != "true" && "${MODE}" == "save" ]]; then
         # now that we've filled in the necessary variables in extract_from_git_repo_url(), re-write $DIR variable and $EXIT_ACTION variable which uses them
         DIR="${HOME}/src/${git_provider%.*}/${username}/${repo%.git}"
-        EXIT_ACTION="echo -e \nrepo permanently saved at ${DIR}"
+        EXIT_ACTION=$(echo ${DIR} > /tmp/git-peak-extended.tmp)
     fi
     
     if [ -d "${DIR}" ]; then
@@ -154,13 +154,13 @@ while :; do
       MODE=save
       DIR="${HOME}/src/${git_provider%.*}/${username}/${repo%.git}"
       GIT_OPTS="--recurse-submodules -j8"
-      EXIT_ACTION="echo -e \nrepo permanently saved at ${DIR}"
+      EXIT_ACTION=$(echo ${DIR} > /tmp/git-peak-extended.tmp)
       ;;
     -p | --permanent)
       MODE=save
       DIR="${HOME}/src/${git_provider%.*}/${username}/${repo%.git}"
       GIT_OPTS="--recurse-submodules -j8"
-      EXIT_ACTION="echo -e \nrepo permanently saved at ${DIR}"
+      EXIT_ACTION=$(echo ${DIR} > /tmp/git-peak-extended.tmp)
       ;;
     -d | --dir | --directory)
       CUSTOM_DIR=true
