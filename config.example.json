@@ -1,0 +1,21 @@
+{
+    "github_username": "person",
+    "provider_preference_order": [
+        "git.example.com",
+        "github.com",
+        "src.somewhere.com",
+        "gitlab.com",
+        "git.sr.ht",
+        "bitbucket.org"
+    ],
+    "custom_provider_location": [
+        {
+            "provider": "git.example.com",
+            "location": "$HOME/src/example"
+        },
+        {
+            "provider": "src.somewhere.com",
+            "location": "$HOME/src/somewhere"
+        }
+    ]
+}
