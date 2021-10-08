@@ -29,6 +29,23 @@ function set_defaults() {
     EXIT_ACTION="rm -rf ${DIR}"
     DEBUG=false
     SKIP_GIT_CLONE=false
+    DEFAULT_CONFIG_FILE=${HOME}/.config/git-peak-extended/config.json 
+    if [[ -f ${DEFAULT_CONFIG_FILE} ]]; then 
+        CONFIG_FILE=${DEFAULT_CONFIG_FILE}
+    else 
+        CONFIG_FILE=false
+    fi
+    PROVIDER_PREFERENCE_ORDER=github.com gitlab.com git.sr.ht bitbucket.org unknown
+}
+
+function parse_config_file() {
+    GITHUB_USERNAME=$(jq -r .'github_username' ${CONFIG_FILE})
+    PROVIDER_PREFERENCE_ORDER=$(jq -r '.provider_preference_order[]' ${CONFIG_FILE})
+    CUSTOM_PROVIDER_LOCATION_COUNT=$(jq -r '.custom_provider_location | length' ${CONFIG_FILE})
+    for i in $(seq 1 ${CUSTOM_PROVIDER_LOCATION_COUNT}); do
+        CUSTOM_PROVIDER_$i=$(jq -r '.custom_provider_location[1].provider' ${CONFIG_FILE})
+        CUSTOM_PROVIDER_LOCATION_$i=$(jq -r '.custom_provider_location[1].location' ${CONFIG_FILE})
+    done
 }
 
 function extract_from_git_repo_url() {
@@ -59,11 +76,11 @@ function extract_from_git_repo_url() {
 
 function verify_git_repo_exists() {
     if [[ "${git_provider}" == "unknown" ]]; then
-        for i in github.com gitlab.com git.sr.ht bitbucket.org unknown; do
+        for i in ${PROVIDER_PREFERENCE_ORDER}; do
             git_provider=${i}
             case "${git_provider}" in
                 # github.com API returns "Not Found" if repo not found, otherwise message field will be blank for found repos
-                github.com ) curl -s "https://api.github.com/repos/${username}/${repo}" | jq -r '.message' | grep -q -v -i "not found" && return ;;
+                github.com ) curl -s -u "${GITHUB_USERNAME}":"${GITHUB_TOKEN}" https://api.github.com/repos/${username}/${repo}" | jq -r '.message' | grep -q -v -i "not found" && return ;;
                 
                 # gitlab.com API users vs projects makes it hard to search easily
                 # so instead, see if there's "redirected" on the repo page
@@ -85,6 +102,7 @@ function verify_git_repo_exists() {
 }
 
 function set_up_git_clone_url() {
+    # TODO use provider-preference-order here
     GIT_CLONE_URL=$(case "${git_provider}" in
         github.com | gitlab.com | bitbucket.org ) echo -n "git@${git_provider}:${username}/${repo}.git" ;;
         git.sr.ht ) echo -n "git@${git_provider}:~${username}/${repo}" ;;
@@ -190,6 +208,11 @@ done
 if [[ "${DEBUG}" == true ]]; then
     set -x
 fi
+
+if [[ "${CONFIG_FILE}" != false ]]; then
+    parse_config_file
+fi
+
 
 # test user input, ensuring required parameters are set
 ## EDITOR
