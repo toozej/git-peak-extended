@@ -63,7 +63,7 @@ function verify_git_repo_exists() {
             git_provider=${i}
             case "${git_provider}" in
                 # github.com API returns "Not Found" if repo not found, otherwise message field will be blank for found repos
-                github.com ) curl -s -u ${GITHUB_USERNAME}:${GITHUB_TOKEN} "https://api.github.com/repos/${username}/${repo}" | jq -r '.message' | grep -q -v -i "not found" && return ;;
+                github.com ) curl -s -u "${GITHUB_USERNAME}":"${GITHUB_TOKEN}" "https://api.github.com/repos/${username}/${repo}" | jq -r '.message' | grep -q -v -i "not found" && return ;;
                 
                 # gitlab.com API users vs projects makes it hard to search easily
                 # so instead, see if there's "redirected" on the repo page
