@@ -31,7 +31,6 @@ jobs:
     strategy:
       matrix:
         container:
-          - 'centos_8'
           - 'debian_stable'
           - 'debian_testing'
           - 'fedora_latest'
