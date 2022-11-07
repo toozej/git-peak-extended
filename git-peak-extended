@@ -2,7 +2,7 @@
 
 # help/usage information
 function usage {
-    echo "Usage: git-peak-extended [--temp | --temporary | -t] [--save | -s | --permanent | -p] [--dir | -d] [--branch | -b] [--debug] [--help | -h] GIT_REPO_URL <GIT_REPO_BRANCH>"
+    echo "Usage: git-peak-extended [--temp | --temporary | -t] [--save | -s | --permanent | -p] [--dir | -d] [--branch | -b] [--mr | -m] [--debug] [--help | -h] GIT_REPO_URL <GIT_REPO_BRANCH>"
     echo ""
     echo "  --temp | --temporary | -t          Run git-peak-extended in default temporary mode."
     echo ""
@@ -11,6 +11,8 @@ function usage {
     echo "  --dir | -d                         Set custom directory to store saved git repo."
     echo ""
     echo "  --branch | -b                      Non-default branch to checkout."
+    echo ""
+    echo "  --mr | -m                          Append git repo to mr config."
     echo ""
     echo "  --debug                            Run git-peak-extended with verbose debug output."
     echo ""
@@ -28,6 +30,7 @@ function set_defaults() {
     GIT_OPTS="--depth 1"
     EXIT_ACTION="rm -rf ${DIR}"
     DEBUG=false
+    MR=false
     SKIP_GIT_CLONE=false
 }
 
@@ -53,7 +56,7 @@ function extract_from_git_repo_url() {
         git_provider="unknown"
         username="unknown"
         repo="unknown"
-        exit 4
+        exit 5
     fi
 }
 
@@ -78,7 +81,7 @@ function verify_git_repo_exists() {
                 bitbucket.org ) curl -s "https://api.bitbucket.org/2.0/repositories/${username}/${repo}" | jq -r '.type' | grep -q "repository" && return ;;
                 
                 # if git repo wasn't found in above git providers, print error message and exit
-                unknown ) echo "After trying all supported git providers, can't find ${username}/${repo}. Exiting" && exit 5
+                unknown ) echo "After trying all supported git providers, can't find ${username}/${repo}. Exiting" && exit 6
             esac
         done
     fi
@@ -139,6 +142,11 @@ function set_up_dir() {
     fi
 }
 
+function add_repo_to_mr_config {
+    # append repo checked out at ${DIR} to mr config file
+    mr register "${DIR}"
+}
+
 # set defaults before getting user input
 set_defaults
 
@@ -174,6 +182,9 @@ while :; do
       GIT_REPO_BRANCH=$2
       GIT_OPTS="${GIT_OPTS} --branch ${GIT_REPO_BRANCH}"
       shift
+      ;;
+    -m | --mr)
+      MR=true
       ;;
     --debug)
       DEBUG=true
@@ -230,6 +241,15 @@ if [[ "${SKIP_GIT_CLONE}" == false ]]; then
     git clone ${GIT_OPTS} "${GIT_CLONE_URL}" "${DIR}"
 fi
 
+if [[ "${MR}" == true ]]; then
+    if ! command -v mr; then
+        echo "mr command not available, please install myrepos package before using"
+        exit 4
+    else
+        add_repo_to_mr_config
+    fi
+fi
+
 # finally, run what we came here to do: view/edit a repo
 ${EDITOR} "${DIR}"
 
@@ -238,5 +258,5 @@ if ${EXIT_ACTION}; then
     exit 0
 else
     echo "EXIT_ACTION ${EXIT_ACTION} failed, you will likely have to clean up after yourself."
-    exit 6
+    exit 7
 fi

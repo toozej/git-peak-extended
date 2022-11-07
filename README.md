@@ -7,6 +7,7 @@ git-peak-extended uses the same basic idea as [git-peak][git-peak] but takes it 
 2. Supports the three most common public git providers: [GitHub][github], [GitLab][gitlab], [sourcehut][sourcehut], and [BitBucket][bitbucket].
 3. Supports HTTPS, Git, and short-hand formatted repo URLs to clone
 4. Supports checking out a user-specified branch, or the repo's default branch
+5. Supports appending repo to [myrepos ("mr")][mr] config
 
 Like [git-peak][git-peak], git-peak-extended is written in Bash for portability, ease of use, and extendability. 
 
@@ -39,17 +40,18 @@ With so many similar repos as noted [above in the inspirations section](#inspira
     - jq
     - curl
     - coreutils (for the mktemp binary)
+    - myrepos (if you want to append a repo to your mr config)
     - If you're using an apt-based distribution, you can typically install these with:
         ```bash
-        sudo apt-get install -y bash git jq curl coreutils
+        sudo apt-get install -y bash git jq curl coreutils myrepos
         ```
     - If you're using a dnf-based distribution, you can typically install these with:
         ```bash
-        sudo dnf install -y bash git jq curl coreutils
+        sudo dnf install -y bash git jq curl coreutils myrepos
         ```
     - If you're using MacOS, you can typically install these with homebrew:
         ```
-        brew install bash git jq curl
+        brew install bash git jq curl mr
         ```
 2. Download git-peak-extended:
     - Using cURL: `curl -sLo ./git-peak-extended https://raw.githubusercontent.com/toozej/git-peak-extended/main/git-peak-extended && chmod u+x ./git-peak-extended` 
@@ -76,6 +78,7 @@ With so many similar repos as noted [above in the inspirations section](#inspira
         - Temporarily set the editor for this one-time usage of git-peak-extended: `EDITOR=<some_different_editor> ./git-peak-extended <arguments> GIT_REPO_URL`
         - Permanently set the editor by editing your shell's configuration file, adding or adjusting a line like this: `export EDITOR='<some_different_editor>'`
     - If you want to specify a non-default git branch to checkout, you can use `--branch <branch_name>` or add the optional `GIT_REPO_BRANCH` as a positional argument after `GIT_REPO_URL`
+    - If you want to append the git repo you're working on to your myrepos config, you can add `--mr` to your git-peak-extended command
 
 
 ### Assumptions
@@ -99,9 +102,9 @@ curl -sLo ~/bin/git-peak-extended https://raw.githubusercontent.com/toozej/git-p
 echo "gp() { EDITOR='code -n -w -a' $HOME/bin/git-peak-extended --temp $@; }" >> ~/.functions
 ```
 
-3. Alias `gps` to git-peak-extended's save permanently mode
+3. Alias `gps` to git-peak-extended's save permanently mode, appending the repo to your mr config
 ```bash
-echo "gps() { EDITOR=vim $HOME/bin/git-peak-extended --save $@ && cd $(cat /tmp/git-peak-extended.tmp); }" >> ~/.functions
+echo "gps() { EDITOR=vim $HOME/bin/git-peak-extended --mr --save $@ && cd $(cat /tmp/git-peak-extended.tmp); }" >> ~/.functions
 ```
 
 4. Alias `gpb` to git-peak-extended's default mode (temporarily grab repo) with a specific branch
@@ -115,6 +118,7 @@ echo "gpb() { EDITOR='code -n -w -a' $HOME/bin/git-peak-extended --temp --branch
 [github1s]: https://github.com/conwnet/github1s 
 [github]: https://github.com
 [gitlab]: https://gitlab.com
+[mr]: https://myrepos.branchable.com/
 [repo-peek]: https://github.com/rahulunair/repo-peek
 [sourcehut]: https://git.sr.ht/
 [vim]: https://www.vim.org/

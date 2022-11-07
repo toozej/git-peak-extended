@@ -11,7 +11,7 @@ jobs:
 
   check:
     name: Check
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Check out the codebase.
         uses: actions/checkout@v3
@@ -19,15 +19,14 @@ jobs:
       - name: Install check dependencies.
         run: sudo apt-get install -y shellcheck
 
-      - name: Check code syntax.
+      - name: Install and run pre-commits.
         run: |
-          bash -n git-peak-extended
-          shellcheck git-peak-extended
+          make pre-commit
 
   test:
     name: Test
     #needs: check
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         container:
@@ -43,7 +42,9 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Build Docker images
-        run: docker build -t ${{ matrix.container }} -f tests/dockerfiles/Dockerfile_${{ matrix.container }} .
+        run: docker build -t ${{ matrix.container }} -f tests/dockerfiles/Dockerfile_${{ matrix.container
+          }} .
 
       - name: Run tests in containers.
-        run: docker run --rm -v $(pwd):/git-peak-extended ${{ matrix.container }} sh -c "bash /git-peak-extended/tests/run_tests.sh"
+        run: docker run --rm -v $(pwd):/git-peak-extended ${{ matrix.container }} sh -c "bash
+          /git-peak-extended/tests/run_tests.sh"
