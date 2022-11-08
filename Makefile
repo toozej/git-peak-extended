@@ -14,6 +14,8 @@ all: pre-commit
 pre-commit: pre-commit-install pre-commit-run ## Install and run pre-commit hooks
 
 pre-commit-install: ## Install pre-commit hooks and necessary binaries
+	# pre-commit
+	command -v pre-commit || sudo dnf install -y pre-commit || sudo apt-get update -qq && sudo apt install -y pre-commit
 	# shellcheck
 	command -v shellcheck || sudo dnf install -y ShellCheck || sudo apt install -y shellcheck
 	# install and update pre-commits
