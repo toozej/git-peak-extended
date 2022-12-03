@@ -34,7 +34,7 @@ jobs:
           - 'debian_testing'
           - 'fedora_latest'
           - 'fedora_rawhide'
-          - 'ubuntu_2004'
+          - 'ubuntu_2204'
       fail-fast: false
 
     steps:
