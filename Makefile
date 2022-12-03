@@ -21,13 +21,17 @@ run_tests_%:
 	docker run --rm --name $* -v $(CURDIR):/git-peak-extended toozej/git-peak-extended-tests:$* sh -c "bash /git-peak-extended/tests/run_tests.sh"
 
 
-.PHONY: all install pre-reqs test pre-commit pre-commit-install pre-commit-run help
+.PHONY: all install install-home-dir pre-reqs test pre-commit pre-commit-install pre-commit-run help
 
 all: pre-reqs test pre-commit
 
 install: ## Install git-peak-extended
 	sudo cp git-peak-extended /usr/local/bin/git-peak-extended
 	sudo chmod 0755 /usr/local/bin/git-peak-extended
+
+install-home-dir: ## Install git-peak-extended to home's bin directory
+	cp git-peak-extended ~/bin/git-peak-extended
+	chmod 0750 ~/bin/git-peak-extended
 
 pre-reqs: ## Install pre-requisites required to use git-peak-extended
 	command -v apt && sudo apt-get update -qq
