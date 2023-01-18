@@ -4,7 +4,7 @@
 git-peak-extended uses the same basic idea as [git-peak][git-peak] but takes it a few steps further:
 
 1. Supports saving git repos either to temporary storage (like [git-peak][git-peek]), but alternatively, to permanent storage for future use.
-2. Supports the three most common public git providers: [GitHub][github], [GitLab][gitlab], [sourcehut][sourcehut], and [BitBucket][bitbucket].
+2. Supports the most common public git providers: [GitHub][github], [GitLab][gitlab], [sourcehut][sourcehut], and [BitBucket][bitbucket].
 3. Supports HTTPS, Git, and short-hand formatted repo URLs to clone
 4. Supports checking out a user-specified branch, or the repo's default branch
 5. Supports appending repo to [myrepos ("mr")][mr] config
@@ -79,6 +79,7 @@ With so many similar repos as noted [above in the inspirations section](#inspira
         - Permanently set the editor by editing your shell's configuration file, adding or adjusting a line like this: `export EDITOR='<some_different_editor>'`
     - If you want to specify a non-default git branch to checkout, you can use `--branch <branch_name>` or add the optional `GIT_REPO_BRANCH` as a positional argument after `GIT_REPO_URL`
     - If you want to append the git repo you're working on to your myrepos config, you can add `--mr` to your git-peak-extended command
+    - If you want to clone a `GIT_REPO_URL` directly, bypassing any additional niceties of `git-peak-extended`, like say for example for self-hosted Git servers, or others that aren't fully supported by `git-peak-extended`, you can do so by passing the `--raw` flag (or `-r` for short)
 
 
 ### Assumptions

@@ -2,7 +2,7 @@
 
 # help/usage information
 function usage {
-    echo "Usage: git-peak-extended [--temp | --temporary | -t] [--save | -s | --permanent | -p] [--dir | -d] [--branch | -b] [--mr | -m] [--debug] [--help | -h] GIT_REPO_URL <GIT_REPO_BRANCH>"
+    echo "Usage: git-peak-extended [--temp | --temporary | -t] [--save | -s | --permanent | -p] [--dir | -d] [--branch | -b] [--mr | -m] [--raw | -r] [--debug] [--help | -h] GIT_REPO_URL <GIT_REPO_BRANCH>"
     echo ""
     echo "  --temp | --temporary | -t          Run git-peak-extended in default temporary mode."
     echo ""
@@ -13,6 +13,8 @@ function usage {
     echo "  --branch | -b                      Non-default branch to checkout."
     echo ""
     echo "  --mr | -m                          Append git repo to mr config."
+    echo ""
+    echo "  --raw | -r                         Use a raw git URL, don't attempt to parse it for additional feature usage."
     echo ""
     echo "  --debug                            Run git-peak-extended with verbose debug output."
     echo ""
@@ -32,6 +34,7 @@ function set_defaults() {
     DEBUG=false
     MR=false
     SKIP_GIT_CLONE=false
+    RAW_GIT_URL=false
 }
 
 function extract_from_git_repo_url() {
@@ -186,6 +189,9 @@ while :; do
     -m | --mr)
       MR=true
       ;;
+    -r | --raw)
+      RAW_GIT_URL=true
+      ;;
     --debug)
       DEBUG=true
       ;;
@@ -224,11 +230,22 @@ if [ -n "${2}" ]; then
 fi
 
 # extract ${git_provider}, ${username}, ${repo} from user inputted GIT_REPO_URL
-extract_from_git_repo_url
+if [[ "${RAW_GIT_URL}" == false ]]; then
+    extract_from_git_repo_url
+fi
 
 # check if inputted ${GIT_REPO_URL} is already of proper ${GIT_CLONE_URL} format
 # if not, call verify_git_repo_exists and set_up_git_clone_url
-check_git_repo_url
+if [[ "${RAW_GIT_URL}" == false ]]; then
+    check_git_repo_url
+fi
+
+# if we're using "raw" mode, set the ${GIT_CLONE_URL} to the user-inputted ${GIT_REPO_URL}
+# also remove shallow-cloning ${GIT_OPTS}
+if [[ "${RAW_GIT_URL}" == true ]]; then
+    GIT_CLONE_URL=${GIT_REPO_URL}
+    GIT_OPTS="${GIT_OPTS//--depth 1/}"
+fi
 
 # set up ${DIR}
 set_up_dir
