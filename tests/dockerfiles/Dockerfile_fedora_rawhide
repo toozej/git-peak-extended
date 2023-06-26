@@ -2,4 +2,4 @@ FROM fedora:rawhide
 
 # update dnf and install pre-reqs
 # rawhide currently has issues with some gpg-signed packages, so skip it
-RUN dnf upgrade -y --nogpg && dnf install -y --nogpg bash coreutils curl git jq myrepos
+RUN dnf upgrade -y --nogpg && dnf install -y bash coreutils curl git jq myrepos
