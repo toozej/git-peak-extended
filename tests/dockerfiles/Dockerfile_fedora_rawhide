@@ -1,5 +1,5 @@
 FROM fedora:rawhide
 
-# update dnf and install pre-reqs
+# install pre-reqs
 # rawhide currently has issues with some gpg-signed packages, so skip it
-RUN dnf5 upgrade -y && dnf5 install -y bash coreutils curl git jq myrepos
+RUN dnf install -y bash coreutils curl git jq myrepos
