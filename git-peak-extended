@@ -91,10 +91,11 @@ function verify_git_repo_exists() {
 }
 
 function set_up_git_clone_url() {
-    GIT_CLONE_URL=$(case "${git_provider}" in
+    # shellcheck disable=SC2006
+    GIT_CLONE_URL=`case "${git_provider}" in
         github.com | gitlab.com | bitbucket.org ) echo -n "git@${git_provider}:${username}/${repo}.git" ;;
         git.sr.ht ) echo -n "git@${git_provider}:~${username}/${repo}" ;;
-    esac)
+    esac`
 }
 
 function check_git_repo_url() {
