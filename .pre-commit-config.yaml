@@ -4,7 +4,7 @@ minimum_pre_commit_version: "1.15"
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v5.0.0
     hooks:
       - id: check-yaml
         name: Check for valid YAML syntax in repo
@@ -39,14 +39,14 @@ repos:
 
   # format yaml
   - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
-    rev: 0.2.2
+    rev: 0.2.3
     hooks:
       - id: yamlfmt
         args: [--mapping, "2", --sequence, "4", --offset, "2", --width, "88", --preserve-quotes]
 
   # run shellcheck on Bash scripts
   - repo: https://github.com/koalaman/shellcheck-precommit
-    rev: v0.8.0
+    rev: v0.10.0
     hooks:
       - id: shellcheck
 
