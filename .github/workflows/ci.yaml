@@ -21,6 +21,10 @@ jobs:
 
       - name: Install and run pre-commits.
         run: |
+          # temporarily forcefully upgrade+install pre-commit package to get newer
+          # version than is pre-installed in Ubuntu 22.04 runner image
+          sudo pip install --upgrade pip
+          sudo pip install --upgrade --break-system-packages pre-commit
           make pre-commit
 
   test:
