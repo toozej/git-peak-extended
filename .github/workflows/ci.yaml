@@ -39,6 +39,7 @@ jobs:
           - 'fedora_latest'
           - 'fedora_rawhide'
           - 'ubuntu_2204'
+          - 'ubuntu_2404'
       fail-fast: false
 
     steps:
