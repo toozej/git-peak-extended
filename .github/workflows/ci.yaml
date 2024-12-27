@@ -23,7 +23,6 @@ jobs:
         run: |
           # temporarily forcefully upgrade+install pre-commit package to get newer
           # version than is pre-installed in Ubuntu 22.04 runner image
-          sudo pip install --upgrade pip
           sudo pip install --upgrade --break-system-packages pre-commit
           make pre-commit
 
@@ -39,6 +38,7 @@ jobs:
           - 'fedora_latest'
           - 'fedora_rawhide'
           - 'ubuntu_2204'
+          - 'ubuntu_2404'
       fail-fast: false
 
     steps:
