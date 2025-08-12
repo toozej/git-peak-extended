@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the codebase.
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install check dependencies.
         run: sudo apt-get install -y shellcheck
@@ -43,7 +43,7 @@ jobs:
 
     steps:
       - name: Check out the codebase.
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Build Docker images
         run: docker build -t ${{ matrix.container }} -f tests/dockerfiles/Dockerfile_${{ matrix.container
