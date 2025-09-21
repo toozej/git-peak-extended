@@ -30,7 +30,7 @@ function set_defaults() {
     MODE=temp
     DIR=$(mktemp -d)
     GIT_OPTS="--depth 1"
-    EXIT_ACTION="rm -rf ${DIR}"
+    EXIT_ACTION="rm -rf ${DIR}" # This will be overridden for save mode
     DEBUG=false
     MR=false
     SKIP_GIT_CLONE=false
@@ -112,7 +112,8 @@ function set_up_dir() {
         # now that we've filled in the necessary variables in extract_from_git_repo_url(), re-write $DIR variable and $EXIT_ACTION variable which uses them
         DIR="${HOME}/src/${git_provider%.*}/${username}/${repo%.git}"
         # shellcheck disable=SC2116
-        EXIT_ACTION=$(echo "${DIR}" | tee /tmp/git-peak-extended.tmp)
+        echo "${DIR}" > /tmp/git-peak-extended.tmp
+        EXIT_ACTION="true"
     fi
     
     if [ -d "${DIR}" ]; then
@@ -148,7 +149,7 @@ function set_up_dir() {
 
 function add_repo_to_mr_config {
     # append repo checked out at ${DIR} to mr config file
-    mr register "${DIR}"
+    mr --config "${HOME}/src/${git_provider%.*}/.mrconfig.${git_provider%.*}" register "${DIR}"
 }
 
 # set defaults before getting user input
