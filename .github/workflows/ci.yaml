@@ -19,12 +19,14 @@ jobs:
       - name: Install check dependencies.
         run: sudo apt-get install -y shellcheck
 
+      - name: Install uv.
+        uses: astral-sh/setup-uv@v10.1.0
+
       - name: Install and run pre-commits.
         run: |
-          # temporarily forcefully upgrade+install pre-commit package to get newer
-          # version than is pre-installed in Ubuntu 22.04 runner image
-          sudo pip install --upgrade --break-system-packages pre-commit
-          make pre-commit
+          uv venv .venv
+          uv pip install --python .venv/bin/python pre-commit
+          .venv/bin/pre-commit run --all-files
 
   test:
     name: Test
