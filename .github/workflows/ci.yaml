@@ -26,6 +26,7 @@ jobs:
         run: |
           uv venv .venv
           uv pip install --python .venv/bin/python pre-commit
+          PATH="$PWD/.venv/bin:$PATH" make pre-commit-install
           .venv/bin/pre-commit run --all-files
 
   test:
